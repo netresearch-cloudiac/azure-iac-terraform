@@ -1,0 +1,6 @@
+# Ansible docker 
+
+docker run --rm -it -v %CD%:/data cytopia/ansible
+
+# Run ansible with user -u "azadmin" and -k <ask for password>
+ansible-playbook csr1000.yaml -u azadmin -k 

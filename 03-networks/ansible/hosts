@@ -1,0 +1,8 @@
+## Ansible host file
+
+[ONPREMROUTERS]
+onpremgw    ansible_host=vnetvdi-csr1konprem.eastus.cloudapp.azure.com
+
+[ONPREMROUTERS:vars]
+ansible_user=azadmin
+ansible_ssh_pass=Password_1234!

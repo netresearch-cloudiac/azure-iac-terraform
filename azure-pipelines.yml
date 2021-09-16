@@ -1,7 +1,7 @@
 name: $(Date:yyyyMMdd)$(Rev:.r)
 variables:
   var1: value1
-  terraform_templates_dir: 04-slb2srv1reg
+  terraform_templates_dir: 03-networks
 
 trigger:
   - push
@@ -28,21 +28,18 @@ stages:
             backendAzureRmStorageAccountName: 'tfcmmgtstatestore'
             backendAzureRmContainerName: 'tfstatecontainer'
             backendAzureRmKey: 'backendsetup.terraform.tfstate'
-    - job: terraform_validate
-      steps:
+    # - job: terraform_validate
+    #  steps:
         - task: TerraformTaskV2@2
           inputs:
             provider: 'azurerm'
+            #command: 'init'
             command: 'validate'
             workingDirectory: '$(terraform_templates_dir)' 
   - stage: plan
     jobs:
     - job: terraform_init
       steps:
-        # - task: TerraformInstaller@0
-        #   displayName: install terraform
-        #   inputs:
-        #     terraformVersion: 'latest'
         - task: TerraformTaskV2@2
           inputs:
             provider: 'azurerm'
@@ -53,8 +50,6 @@ stages:
             backendAzureRmStorageAccountName: 'tfcmmgtstatestore'
             backendAzureRmContainerName: 'tfstatecontainer'
             backendAzureRmKey: 'backendsetup.terraform.tfstate'
-    - job: planning
-      steps:
         - task: TerraformTaskV2@2
           inputs:
             provider: 'azurerm'
@@ -62,3 +57,129 @@ stages:
             commandOptions: '-out=tfplan'
             workingDirectory: '$(terraform_templates_dir)'
             environmentServiceNameAzureRM: 'Visual Studio Enterprise – MPN(07209e8b-f025-434a-98ee-5e5430ed50b1)'
+        # - task: TerraformTaskV2@2
+        #   inputs:
+        #     provider: 'azurerm'
+        #     command: 'show'
+        #     commandOptions: '-json tfplan > tfplan.json'
+        #     workingDirectory: '$(terraform_templates_dir)'
+        #     environmentServiceNameAzureRM: 'Visual Studio Enterprise – MPN(07209e8b-f025-434a-98ee-5e5430ed50b1)'
+        # - publish: tfplan.json
+        #   artifact: tfplanfile
+
+        # - task: PublishBuildArtifacts@1
+        #   inputs:
+        #     pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        #     artifactName: drop1
+        # steps:
+        - task: CmdLine@2
+          inputs:
+            script: |
+              date 
+              terraform show -json tfplan > tfplan.json
+            workingDirectory: '$(terraform_templates_dir)'
+        - publish: '$(terraform_templates_dir)/tfplan.json'
+          artifact: tfplanfile
+    
+  - stage: deploy_approval
+    jobs:
+      - job: waitForValidation
+        displayName: Wait for external validation
+        pool: server
+        timeoutInMinutes: 30 # job times out in 1 day
+        steps:
+        - task: ManualValidation@0
+          timeoutInMinutes: 2 # task times out in 10 mins
+          inputs:
+            notifyUsers: |
+              dheep@net-research.com.au
+            instructions: 'Please validate the build configuration and resume'
+            onTimeout: 'reject'
+
+  - stage: deploy
+    jobs:
+    - job: terraform_apply
+      steps:
+        # - task: ManualValidation@0
+        # # timeoutInMinutes: 1440 # task times out in 1 day
+        # timeoutInMinutes: 10 # task times out in 10 minutes
+        # inputs:
+        #   notifyUsers: |
+        #     dheep@net-research.com.au
+        #   instructions: 'Please validate the auzre build configuration and resume'
+        #   onTimeout: 'resume'
+
+        - task: TerraformTaskV2@2
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: $(terraform_templates_dir)
+            backendServiceArm: 'Visual Studio Enterprise – MPN(07209e8b-f025-434a-98ee-5e5430ed50b1)'
+            backendAzureRmResourceGroupName: 'RG-common-base'
+            backendAzureRmStorageAccountName: 'tfcmmgtstatestore'
+            backendAzureRmContainerName: 'tfstatecontainer'
+            backendAzureRmKey: 'backendsetup.terraform.tfstate'
+
+        - task: TerraformTaskV2@2
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            commandOptions: '-out=tfplan'
+            workingDirectory: '$(terraform_templates_dir)'
+            environmentServiceNameAzureRM: 'Visual Studio Enterprise – MPN(07209e8b-f025-434a-98ee-5e5430ed50b1)'
+        
+        - task: TerraformTaskV2@2
+          inputs:
+            provider: 'azurerm'
+            command: 'apply'
+            commandOptions: '-auto-approve'
+            workingDirectory: '$(terraform_templates_dir)'
+            environmentServiceNameAzureRM: 'Visual Studio Enterprise – MPN(07209e8b-f025-434a-98ee-5e5430ed50b1)'
+
+  - stage: delete_approval
+    jobs:
+    - job: waitForValidation
+      displayName: Wait for external validation
+      pool: server
+      timeoutInMinutes: 120 # job times out in 2hours
+      steps:
+      - task: ManualValidation@0
+        timeoutInMinutes: 60 # task times out in 60 mins
+        inputs:
+          notifyUsers: |
+            dheep@net-research.com.au
+          instructions: 'Please validate the to delete azure infrastructure'
+          onTimeout: 'resume'
+        
+  - stage: delete
+    jobs:
+    - job: terraform_apply
+      steps:
+        # - task: ManualValidation@0
+        # # timeoutInMinutes: 1440 # task times out in 1 day
+        # timeoutInMinutes: 10 # task times out in 10 minutes
+        # inputs:
+        #   notifyUsers: |
+        #     dheep@net-research.com.au
+        #   instructions: 'Please validate the auzre build configuration and resume'
+        #   onTimeout: 'resume'
+
+        - task: TerraformTaskV2@2
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: $(terraform_templates_dir)
+            backendServiceArm: 'Visual Studio Enterprise – MPN(07209e8b-f025-434a-98ee-5e5430ed50b1)'
+            backendAzureRmResourceGroupName: 'RG-common-base'
+            backendAzureRmStorageAccountName: 'tfcmmgtstatestore'
+            backendAzureRmContainerName: 'tfstatecontainer'
+            backendAzureRmKey: 'backendsetup.terraform.tfstate'
+        
+        - task: TerraformTaskV2@2
+          inputs:
+            provider: 'azurerm'
+            command: 'destroy'
+            commandOptions: '-auto-approve'
+            workingDirectory: '$(terraform_templates_dir)'
+            environmentServiceNameAzureRM: 'Visual Studio Enterprise – MPN(07209e8b-f025-434a-98ee-5e5430ed50b1)'
+        

@@ -1,0 +1,22 @@
+---
+
+- hosts: ONPREMROUTERS
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - name: add loopback
+      ios_config:
+        lines:
+          - hostname csr1000v
+          #- conf t
+          #- int lo30
+    - name: int description
+      ios_config:
+        lines:
+          - description VPNint - config by Ansible
+        parents: interface gi1
+
+
+
+  

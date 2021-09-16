@@ -59,18 +59,25 @@ ARM_TENANT_ID
 - Terraform Extension for Azure DevOps - https://github.com/microsoft/azure-pipelines-extensions/tree/master/Extensions/Terraform/Src
 ## Enterprise CI/CD
 - Enterprise CI/CD Best Practices (3part series) - https://dev.to/kostiscodefresh/series/13231
+- Terraform workflow - https://www.terraform.io/guides/core-workflow.html
 
 ## Cloud Operating Model
 - How can organizations adopt the cloud operating model? - https://www.hashicorp.com/resources/what-is-cloud-operating-model-adoption
 - Unlocking the Cloud Operating Model: People, Process, Tools - https://www.hashicorp.com/resources/unlocking-cloud-operating-model-people-process-tools
 - AWS Events - Cloud Operating Models for Accelerated Transformation - Level 200 - https://www.youtube.com/watch?v=ksJ5_UdYIag
 - AWS re:Invent 2020: Transform your organization’s culture with a Cloud Center of Excellence - https://www.youtube.com/watch?v=VN1vj0d3Z1Y
+- What is DevOps - https://www.netapp.com/devops-solutions/what-is-devops/
+
 
 ## Terraform template links
 - Terraform on Azure documentation - https://docs.microsoft.com/en-us/azure/developer/terraform/
 - Azure Terrafrom configuration templates - https://github.com/hashicorp/terraform-provider-azurerm/tree/main/examples
 - Create an Azure VM cluster with loadbalancer with Terraform and HCL - https://docs.microsoft.com/en-us/azure/developer/terraform/create-vm-cluster-with-infrastructure
 - example terraform outputs - https://github.com/Azure/terraform-azurerm-compute/blob/master/outputs.tf
+- Deploying to multiple Azure subscriptions using Terraform - https://medium.com/codex/deploying-to-multiple-azure-subscriptions-using-terraform-81249a58a600
+
+### Terrafrom special cases
+- Multi-Cloud Open DC/OS on AWS with Terraform AWS and Azure (with Cisco csr 1000v) - https://github.com/bernadinm/hybrid-cloud
 
 ## Azure Networking VNET links
 - How network security groups filter network traffic - https://docs.microsoft.com/en-us/azure/virtual-network/network-security-group-how-it-works
